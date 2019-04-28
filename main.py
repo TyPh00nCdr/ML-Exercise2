@@ -37,8 +37,6 @@ def main():
                     if err <= 0.001) + 1
     print('Error smaller than 1/1000 after {} iterations'.format(diff_err))
 
-    print(data[:, 0].min(), data[:, 0].max())
-
     x_axis1 = np.linspace(data[:, 0].min(), data[:, 0].max())
     x_axis2 = np.arange(0, len(default_error))
     # astrix syntax: list all rows individually (equal to x, y = green_cloud.T)
