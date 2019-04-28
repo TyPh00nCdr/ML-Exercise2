@@ -1,8 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 
-alpha = 0.1
-iterations = 2000
+alpha = 2.37
+iterations = 100
 
 
 def main():
@@ -19,28 +20,41 @@ def main():
     # np.savetxt('models/theta_init.txt', theta)
     theta = np.loadtxt('models/theta_init.txt')
 
-    error = np.zeros(iterations)
+    default_error = np.zeros(iterations)
     for i in range(iterations):
         for data_point in data:
             adjust_weight(data_point[0], data_point[1], data_point[2])
-        error[i] = 0.5 * sum([(y_func(x[0]) - x[1]) ** 2 for x in data])
+        default_error[i] = 0.5 * sum([(g_func(x[0], x[1]) - x[2]) ** 2 for x in data])
+
+    rms_error = [np.sqrt((2 * i)/ len(data)) for i in default_error]
 
     np.savetxt('models/theta_model.txt', theta)
-    np.savetxt('models/error.txt', error)
+    np.savetxt('models/error.txt', default_error)
+    np.savetxt('models/rms_error.txt', rms_error)
 
     diff_err = next(idx for idx, err
-                    in enumerate([abs(t - s) for s, t in zip(error, error[1:])])
-                    if err <= 0.0001) + 1
-    print('Error smaller than 1/10000 after {} iterations'.format(diff_err))
+                    in enumerate([abs(t - s) for s, t in zip(default_error, default_error[1:])])
+                    if err <= 0.001) + 1
+    print('Error smaller than 1/1000 after {} iterations'.format(diff_err))
+
+    print(data[:, 0].min(), data[:, 0].max())
 
     x_axis1 = np.linspace(data[:, 0].min(), data[:, 0].max())
-    x_axis2 = np.arange(0, len(error))
+    x_axis2 = np.arange(0, len(default_error))
     # astrix syntax: list all rows individually (equal to x, y = green_cloud.T)
-    fig, (ax1, ax2) = plt.subplots(1, 2)
+    gs = gridspec.GridSpec(2, 2)
+    fig = plt.figure()
+    ax1 = fig.add_subplot(gs[0, :])  # row 1, span all columns
     ax1.plot(*green_cloud.T, 'go')
     ax1.plot(*red_cloud.T, 'ro')
     ax1.plot(x_axis1, y_func(x_axis1), 'b-')
-    ax2.plot(x_axis2, error)
+
+    ax2 = fig.add_subplot(gs[1, 0])  # row 0, col 0
+    ax2.plot(x_axis2, default_error)
+
+    ax3 = fig.add_subplot(gs[1, 1])  # row 0, col 1
+    ax3.plot(x_axis2, rms_error)
+
     plt.show()
 
 
